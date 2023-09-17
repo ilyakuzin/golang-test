@@ -20,10 +20,11 @@ func main() {
 		fmt.Fprintln(out, "One of args not defined")
 		//выход?
 	}
-	run(path, newText, textToReplace)
+	err := run(path, newText, textToReplace)
+	fmt.Fprintln(out, err)
 }
 
-func run(path string, newText string, textToReplace string) {
+func run(path string, newText string, textToReplace string) error {
 	//year, month, day := time.Now().Date() //а как пребразовать дату в строчку? :)
 	//чтобы в названии лог-файла указать дату, что-то типо logFile, err := os.Create("log%с%d%c.txt", day, month, year)
 	logFile, err := os.Create("log.txt")
@@ -71,6 +72,7 @@ func run(path string, newText string, textToReplace string) {
 			}
 		}
 	}
+	return err
 }
 
 // регуляркой не придумал как, поэтому отдельный метод
