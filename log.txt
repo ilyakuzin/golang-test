@@ -1,6 +1,12 @@
-2023/09/18 13:23:52 %s: line %d, %s -> %s D:\testGo 1 Hello 
-2023/09/18 13:23:52 %s: line %d, %s -> %s D:\testGo 2 Hello 
-2023/09/18 13:23:52 %s: line %d, %s -> %s D:\testGo 1 Hello 
-2023/09/18 13:23:52 %s: line %d, %s -> %s D:\testGo 2 Hello 
-2023/09/18 13:23:52 %s: line %d, %s -> %s D:\testGo 1 Hello 
-2023/09/18 13:23:52 %s: line %d, %s -> %s D:\testGo 2 Hello 
+2023/09/18 16:46:55 D:\testGo\test1.txt: line 1 
+ Hi Golan -> Hi Ilyal 
+2023/09/18 16:46:55 D:\testGo\test1.txt: line 2 
+ Hi Go, m -> Hi Ilya, 
+2023/09/18 16:46:55 D:\testGo\test2.txt: line 1 
+ Hi Golan -> Hi Ilyal 
+2023/09/18 16:46:55 D:\testGo\test2.txt: line 2 
+ Hi Go, m -> Hi Ilya, 
+2023/09/18 16:46:55 D:\testGo\test3.txt: line 1 
+ Hi Golan -> Hi Ilyal 
+2023/09/18 16:46:55 D:\testGo\test3.txt: line 2 
+ Hi Go, m -> Hi Ilya, 

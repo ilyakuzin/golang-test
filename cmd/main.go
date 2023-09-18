@@ -57,17 +57,14 @@ func run(path string, newText string, textToReplace string) error {
 				line := scanner.Text()
 				if strings.Contains(line, textToReplace) {
 					newStr := strings.ReplaceAll(line, textToReplace, newText)
-					fmt.Println(newStr)
-					fmt.Println(getSnippet(line, textToReplace, 5))
-					logger.Println("%s: line %d, %s -> %s", path, lineNumber,
-						getSnippet(line, textToReplace, 5),
-						getSnippet(newText, newStr, 5))
+					//делать запись о кажждой замене в тексте в лог файле
+					logger.Printf("%s: line %d \n %s -> %s \n", name.Name(), lineNumber, getSnippet(line, textToReplace, 5), getSnippet(newStr, newText, 5))
 					lines = append(lines, newStr)
 				}
 				lineNumber++
 			}
-			err = name.Truncate(0)   //очищаем файл
-			_, err = name.Seek(0, 0) //возвращаемся в начало
+			err = name.Truncate(0)
+			_, err = name.Seek(0, 0)
 			writer := bufio.NewWriter(name)
 			for _, line := range lines {
 				writer.WriteString(line + "\n")
