@@ -1,7 +1,9 @@
-FROM golang:1.21-alpine AS builder
+FROM golang:alpine
 
-RUN apk mkdir /cmd
-ADD . /cmd/
-WORKDIR /cmd
-RUN go build -o main
-CMD ["/cmd/main"]
+WORKDIR /app
+COPY go.mod ./
+COPY . .
+
+RUN go build -o main ./cmd/main.go
+
+CMD ["./main"]

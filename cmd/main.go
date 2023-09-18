@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"strings"
 )
@@ -17,37 +18,42 @@ func main() {
 		return
 	}
 	if len(path) == 0 {
-		fmt.Println("Path is not defined")
+		log.Fatal("Path is not defined")
 		return
 	} else if len(newText) == 0 {
-		fmt.Println("New text is nil")
+		log.Fatal("New text is nil")
 		return
 	} else if len(textToReplace) == 0 {
-		fmt.Println("Text to replace is nil")
+		log.Fatal("Text to replace is nil")
 		return
 	}
 	e := run(path, newText, textToReplace)
-	fmt.Println(e)
+	if e != nil {
+		log.Fatal(e)
+	}
+	slog.Info("All done")
 }
 
 func run(path string, newText string, textToReplace string) error {
-	logFile, err := os.Create("log.txt") //создали лог файл
+	logFile, err := os.CreateTemp(path, "log.*.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer logFile.Close()
+	defer func() {
+		err := logFile.Close()
+		slog.Warn(err.Error())
+	}()
 	logger := log.New(logFile, "", log.LstdFlags)
-
 	files, e := os.ReadDir(path)
 	if e != nil {
-		logFile.WriteString("Something went wrong, check path")
-		log.Fatal(e)
+		_, errLog := logFile.WriteString("Something went wrong, check path")
+		return errLog
 	}
 	for _, file := range files {
 		if !file.IsDir() {
 			pathStr := []string{path, file.Name()}
-			name, e := os.OpenFile(strings.Join(pathStr, "\\"), os.O_RDWR, 0644)
-			if e != nil {
+			name, errorOpFile := os.OpenFile(strings.Join(pathStr, "\\"), os.O_RDWR, 0644)
+			if errorOpFile != nil {
 				logger.Println("File reading error, path: %s, file name: %s", path, name)
 			}
 			scanner := bufio.NewScanner(name)
@@ -56,9 +62,13 @@ func run(path string, newText string, textToReplace string) error {
 			for scanner.Scan() {
 				line := scanner.Text()
 				if strings.Contains(line, textToReplace) {
-					newStr := strings.ReplaceAll(line, textToReplace, newText)
-					//делать запись о кажждой замене в тексте в лог файле
-					logger.Printf("%s: line %d \n %s -> %s \n", name.Name(), lineNumber, getSnippet(line, textToReplace, 5), getSnippet(newStr, newText, 5))
+					var newStr string
+					ctr := strings.Count(line, textToReplace)
+					for i := ctr; i > 0; i-- {
+						index := strings.Index(line, textToReplace)
+						newStr = strings.Replace(line, textToReplace, newText, 1)
+						logger.Printf("file: %s: line %d, pos: %d \n %s -> %s \n", name.Name(), lineNumber, index, getSnippet(newStr, textToReplace, 5), getSnippet(newStr, newText, 5))
+					}
 					lines = append(lines, newStr)
 				}
 				lineNumber++
@@ -79,7 +89,6 @@ func run(path string, newText string, textToReplace string) error {
 }
 
 func getSnippet(oldText string, newText string, snippetLength int) string {
-	//snippetLength - длина фрагмента текста перед и после заменяемого текста
 	index := strings.Index(oldText, newText)
 	if index == -1 {
 		return ""
@@ -88,7 +97,7 @@ func getSnippet(oldText string, newText string, snippetLength int) string {
 	if start < 0 {
 		start = 0
 	}
-	end := index + snippetLength
+	end := index + len(newText) + snippetLength
 	if end > len(oldText) {
 		end = len(oldText)
 	}
