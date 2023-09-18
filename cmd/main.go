@@ -10,41 +10,45 @@ import (
 
 func main() {
 	in := bufio.NewReader(os.Stdin)
-	out := bufio.NewWriter(os.Stdout)
-	defer out.Flush()
-	//как лучше будет обработать аргументы?
 	var path, newText, textToReplace string
-	fmt.Fscan(in, path, newText, textToReplace) //обрабатывать ли ошибку?
-
-	if len(path) == 0 || len(newText) == 0 || len(textToReplace) == 0 {
-		fmt.Fprintln(out, "One of args not defined")
-		//выход?
+	_, err := fmt.Fscan(in, &path, &textToReplace, &newText)
+	if err != nil {
+		fmt.Printf("Reading data error %s", err.Error())
+		return
 	}
-	err := run(path, newText, textToReplace)
-	fmt.Fprintln(out, err)
+	if len(path) == 0 {
+		fmt.Println("Path is not defined")
+		return
+	} else if len(newText) == 0 {
+		fmt.Println("New text is nil")
+		return
+	} else if len(textToReplace) == 0 {
+		fmt.Println("Text to replace is nil")
+		return
+	}
+	e := run(path, newText, textToReplace)
+	fmt.Println(e)
 }
 
 func run(path string, newText string, textToReplace string) error {
-	//year, month, day := time.Now().Date() //а как пребразовать дату в строчку? :)
-	//чтобы в названии лог-файла указать дату, что-то типо logFile, err := os.Create("log%с%d%c.txt", day, month, year)
-	logFile, err := os.Create("log.txt")
+	logFile, err := os.Create("log.txt") //создали лог файл
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer logFile.Close()
 	logger := log.New(logFile, "", log.LstdFlags)
 
-	files, err := os.ReadDir(path)
-	if err != nil {
+	files, e := os.ReadDir(path)
+	if e != nil {
 		logFile.WriteString("Something went wrong, check path")
-		log.Fatal(err)
-		//defer files.Close() ?
+		log.Fatal(e)
 	}
 	for _, file := range files {
 		if !file.IsDir() {
-			name, err := os.Open(file.Name())
-			if err != nil {
-				logger.Println("File reading error, path: %s, file name: %c", path, name)
+			pathStr := []string{path, file.Name()}
+			name, e := os.OpenFile(strings.Join(pathStr, "\\"), os.O_RDWR, 0644)
+			if e != nil {
+				logger.Println("File reading error, path: %s, file name: %s", path, name)
 			}
 			scanner := bufio.NewScanner(name)
 			var lines []string
@@ -53,15 +57,17 @@ func run(path string, newText string, textToReplace string) error {
 				line := scanner.Text()
 				if strings.Contains(line, textToReplace) {
 					newStr := strings.ReplaceAll(line, textToReplace, newText)
-					logger.Println("%s: line %d, %s -> &s", path, lineNumber,
+					fmt.Println(newStr)
+					fmt.Println(getSnippet(line, textToReplace, 5))
+					logger.Println("%s: line %d, %s -> %s", path, lineNumber,
 						getSnippet(line, textToReplace, 5),
 						getSnippet(newText, newStr, 5))
 					lines = append(lines, newStr)
 				}
 				lineNumber++
 			}
-			name.Truncate(0) //очищаем файл
-			name.Seek(0, 0)  //возвращаемся в начало
+			err = name.Truncate(0)   //очищаем файл
+			_, err = name.Seek(0, 0) //возвращаемся в начало
 			writer := bufio.NewWriter(name)
 			for _, line := range lines {
 				writer.WriteString(line + "\n")
@@ -75,7 +81,6 @@ func run(path string, newText string, textToReplace string) error {
 	return err
 }
 
-// регуляркой не придумал как, поэтому отдельный метод
 func getSnippet(oldText string, newText string, snippetLength int) string {
 	//snippetLength - длина фрагмента текста перед и после заменяемого текста
 	index := strings.Index(oldText, newText)

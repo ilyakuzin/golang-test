@@ -1,1 +1,6 @@
-Something went wrong, check path
+2023/09/18 13:23:52 %s: line %d, %s -> %s D:\testGo 1 Hello 
+2023/09/18 13:23:52 %s: line %d, %s -> %s D:\testGo 2 Hello 
+2023/09/18 13:23:52 %s: line %d, %s -> %s D:\testGo 1 Hello 
+2023/09/18 13:23:52 %s: line %d, %s -> %s D:\testGo 2 Hello 
+2023/09/18 13:23:52 %s: line %d, %s -> %s D:\testGo 1 Hello 
+2023/09/18 13:23:52 %s: line %d, %s -> %s D:\testGo 2 Hello 
